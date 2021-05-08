@@ -33,6 +33,7 @@ public class Player extends GameObject{
     @Override
     public void render(Graphics g) {
         g.setColor(Color.decode("#3f6082"));
+        if(this.getId()==ID.Player2)g.setColor(Color.decode("#ff60ff"));
         g.fillRect(x, y, 50, 50);
         this.setSize(50);
     }

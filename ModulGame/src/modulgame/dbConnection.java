@@ -35,18 +35,20 @@ public class dbConnection {
         
         DefaultTableModel dataTabel = null;
         try{
-            Object[] column = {"No", "Username", "Score"};
+            Object[] column = {"No", "Username", "Score", "Waktu", "Score Akhir"};
             connect();
             dataTabel = new DefaultTableModel(null, column);
-            String sql = "Select * from highscore order by score desc";
+            String sql = "Select * from highscore order by ScoreAkhir desc";
             ResultSet res = stm.executeQuery(sql);
             
             int no = 1;
             while(res.next()){
-                Object[] hasil = new Object[3];
+                Object[] hasil = new Object[5];
                 hasil[0] = no;
                 hasil[1] = res.getString("Username");
                 hasil[2] = res.getString("Score");
+                hasil[3] = res.getString("Waktu");
+                hasil[4] = res.getString("ScoreAkhir");
                 no++;
                 dataTabel.addRow(hasil);
             }
@@ -57,15 +59,30 @@ public class dbConnection {
         return dataTabel;
     }
     
-    public void insertData(String username, int score){
+    public void insertData(String username, int score, int time){
         try{
             connect();
-            String sql = "Insert into highscore(username,score) values('" + username +"',"+Integer.toString(score)+")";
+            String sql = "SELECT * from highscore where Username ='"+username+"' limit 1";
+            ResultSet res = stm.executeQuery(sql);
+//            System.out.println(res);
+            sql = "Insert into highscore(username,score,waktu,scoreakhir) values('" + username +"',"+Integer.toString(score)+","+ Integer.toString(time)+ "," + Integer.toString(score + time) + ")";
+            while(res.next()){
+                int hasil = res.getInt("ScoreAkhir");
+//                System.out.println(score + time);
+//                System.out.println(hasil);
+                if(hasil < score + time){
+                    sql = "UPDATE highscore SET scoreakhir = GREATEST(scoreakhir," + Integer.toString(score+time) +")" + ",Score =" + Integer.toString(score) + ",Waktu =" + Integer.toString(time) + " WHERE username = '" +username+"'";
+                }
+                else{
+                    sql = "";
+                }
+//                System.out.print(sql);
+            }
             stm.execute(sql);
-            System.out.print(sql);
         }
         catch(Exception e){
             System.err.println("Gagal memasukkan data : " + e.getMessage());
         }
     }
+    
 }

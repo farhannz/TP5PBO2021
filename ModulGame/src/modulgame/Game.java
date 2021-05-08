@@ -30,7 +30,7 @@ public class Game extends Canvas implements Runnable{
     private int score = 0;
     private int banyakItem = 2;
     private int time = 10;
-    
+    private Clip clip = null;
     private Thread thread;
     private boolean running = false;
     
@@ -43,7 +43,18 @@ public class Game extends Canvas implements Runnable{
     
     public STATE gameState = STATE.Game;
     
-    public Game(String username){
+    public Game(String username, String difficulty){
+        System.out.println(difficulty);
+        playSound("/Matt Quentin - Waves.wav");
+        if(difficulty.compareTo("Easy") == 0){
+            time = 20;
+        }
+        else if(difficulty.compareTo("Medium") == 0){
+            time = 10;
+        }
+        else if(difficulty.compareTo("Hard") == 0){
+            time = 5;
+        }
         window = new Window(WIDTH, HEIGHT, "Modul praktikum 5", this);
         this.uname = username;
         handler = new Handler();
@@ -53,9 +64,10 @@ public class Game extends Canvas implements Runnable{
         if(gameState == STATE.Game){
             handler.addObject(new Items(100,150, ID.Item));
             handler.addObject(new Items(200,350, ID.Item));
-            handler.addObject(new Player(200,200, ID.Player));
-            handler.addObject(new Enemy(700,500, ID.Enemy));
-            handler.addObject(new Enemy(300,300, ID.Enemy));
+            handler.addObject(new Player(200,400, ID.Player1));
+            handler.addObject(new Player(500,400, ID.Player2));
+            handler.addObject(new Enemy(700,500, ID.Enemy, difficulty));
+            handler.addObject(new Enemy(600,100, ID.Enemy, difficulty));
         }
     }
 
@@ -118,7 +130,8 @@ public class Game extends Canvas implements Runnable{
     private void tick(){
         handler.tick();
         if(gameState == STATE.Game){
-            GameObject playerObject = null;
+            GameObject playerObject1 = null;
+            GameObject playerObject2 = null;
             if(banyakItem == 0){
                 for(int i = 0;i<getRandomNumber(4,7);++i){
                     handler.addObject(new Items(getRandomNumber(20,700),getRandomNumber(20,500),ID.Item));
@@ -126,24 +139,46 @@ public class Game extends Canvas implements Runnable{
                 }
             }
             for(int i=0;i< handler.object.size(); i++){
-                if(handler.object.get(i).getId() == ID.Player){
-                   playerObject = handler.object.get(i);
+                if(handler.object.get(i).getId() == ID.Player1){
+                   playerObject1 = handler.object.get(i);
+                }
+                if(handler.object.get(i).getId() == ID.Player2){
+                   playerObject2 = handler.object.get(i);
                 }
             }
-            if(playerObject != null){
+            if(playerObject1 != null){
                 for(int i=0;i< handler.object.size(); i++){
                     if(handler.object.get(i).getId() == ID.Item){
-                        if(checkCollision(playerObject, handler.object.get(i))){
+                        if(checkCollision(playerObject1, handler.object.get(i))){
                             playSound("/Eat.wav");
                             handler.removeObject(handler.object.get(i));
-                            score = score + 10;
-                            time = time + 5;
+                            score = score + getRandomNumber(5,20);
+                            time = time + getRandomNumber(3,10);
                             banyakItem--;
                             break;
                         }
                     }
                     if(handler.object.get(i).getId() == ID.Enemy){
-                        if(checkCollision(playerObject,handler.object.get(i))){
+                        if(checkCollision(playerObject1,handler.object.get(i))){
+                            gameState = STATE.GameOver;
+                        }
+                    }
+                }
+            }
+            if(playerObject2 != null){
+                for(int i=0;i< handler.object.size(); i++){
+                    if(handler.object.get(i).getId() == ID.Item){
+                        if(checkCollision(playerObject2, handler.object.get(i))){
+                            playSound("/Eat.wav");
+                            handler.removeObject(handler.object.get(i));
+                            score = score + getRandomNumber(5,20);
+                            time = time + getRandomNumber(3,10);
+                            banyakItem--;
+                            break;
+                        }
+                    }
+                    if(handler.object.get(i).getId() == ID.Enemy){
+                        if(checkCollision(playerObject2,handler.object.get(i))){
                             gameState = STATE.GameOver;
                         }
                     }
@@ -204,6 +239,9 @@ public class Game extends Canvas implements Runnable{
 
             g.setColor(Color.BLACK);
             g.drawString("Time: " +Integer.toString(time), WIDTH-120, 20);
+            
+            g.setColor(Color.BLACK);
+            g.drawString("BGM : Matt Quentin - Waves",0,550);
         }else{
             Font currentFont = g.getFont();
             Font newFont = currentFont.deriveFont(currentFont.getSize() * 3F);
@@ -217,7 +255,7 @@ public class Game extends Canvas implements Runnable{
             g.setFont(newScoreFont);
 
             g.setColor(Color.BLACK);
-            g.drawString("Score: " +Integer.toString(score), WIDTH/2 - 50, HEIGHT/2 - 10);
+            g.drawString("Score: " +Integer.toString(score+time), WIDTH/2 - 50, HEIGHT/2 - 10);
             
             g.setColor(Color.BLACK);
             g.drawString("Press Space to Continue", WIDTH/2 - 100, HEIGHT/2 + 30);;
@@ -237,6 +275,7 @@ public class Game extends Canvas implements Runnable{
     }
     
     public void close(){
+        stopClip();
         window.CloseWindow();
     }
     
@@ -246,7 +285,7 @@ public class Game extends Canvas implements Runnable{
             URL url = this.getClass().getResource(filename);
             AudioInputStream audioIn = AudioSystem.getAudioInputStream(url);
             // Get a sound clip resource.
-            Clip clip = AudioSystem.getClip();
+            clip = AudioSystem.getClip();
             // Open audio clip and load samples from the audio input stream.
             clip.open(audioIn);
             clip.start();
@@ -262,8 +301,14 @@ public class Game extends Canvas implements Runnable{
     public int getScore(){
         return score;
     }
-    
+    public int getWaktu(){
+        return time;
+    }
     public String getUsername(){
         return uname;
+    }
+    public void stopClip(){
+        clip.stop();
+        clip.close();
     }
 }

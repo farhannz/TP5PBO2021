@@ -14,11 +14,12 @@ import java.util.Random;
  */
 public class Enemy extends GameObject {
     
-    int updateDuration = 30; // It will update every 30 ticks
-    int tickCounter = 0;
-    public Enemy(int x, int y, ID id){
+    private int updateDuration = 30; // It will update every 30 ticks
+    private int tickCounter = 0;
+    private String difficulty;
+    public Enemy(int x, int y, ID id, String difficulty){
         super(x, y, id);
-        
+        this.difficulty = difficulty;
         //speed = 1;
     }
 
@@ -26,9 +27,22 @@ public class Enemy extends GameObject {
     public void tick() {
         if(tickCounter == updateDuration){
             int[] ar = new int[3];
-            ar[0] = -5;
-            ar[1] = 5;
-            ar[2] = 0;
+            if(difficulty.compareTo("Easy") == 0){
+                ar[0] = -3;
+                ar[1] = 3;
+                ar[2] = 0;
+            }
+            else if(difficulty.compareTo("Medium") == 0){
+                ar[0] = -5;
+                ar[1] = 5;
+                ar[2] = 0;
+            }
+            else if(difficulty.compareTo("Hard") == 0){
+                ar[0] = -8;
+                ar[1] = 8;
+                ar[2] = 0;
+            }
+            
             Random r = new Random();
             
             this.setVel_x(ar[r.nextInt(3-0) + 0]);

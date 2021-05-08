@@ -10,7 +10,8 @@ package modulgame;
  * @author Fauzan
  */
 public enum ID {
-    Player(),
+    Player1(),
+    Player2(),
     Item(),
     Enemy();
 }
